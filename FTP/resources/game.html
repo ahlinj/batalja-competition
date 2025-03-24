@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+
+    <link rel="stylesheet" href="game.css">
+
+    <script src="./games/gameImp.js" defer></script>
+
+    <!-- Do not change anything except this between comments!!! -->
+    <script src="./games/batalja.js" defer></script>
+    <script src="anime.min.js" defer></script>
+    <!-- Do not change anything except this between comments!!! -->
+
+
+    <script src="game.js" defer></script>
+
+</head>
+
+<body style="margin: 0;">
+
+    <div id="game">
+        <div id="container" onmousemove="showControls()">
+
+            <table id="stats"></table>
+            <div id="game-bar"></div>
+
+            <div id="controls" onmouseover="clearTimeout(hideControlsTimeout)" onmouseleave="showControls()">
+                <input type="range" id="progressBar" oninput="game.setTurn(parseInt(this.value))" value="0" max="100">
+                <div class="controls-bottom">
+                    <div class="controls-left">
+                        <button class=".play-button control-button" id="playPauseBtn" onclick="this.textContent = game.pauseResume() ? '⏸️' : '▶️'">⏸️</button>
+                        <p class="time-stamp" id="timeStamp">0/0</p>
+                    </div>
+                    <div class="controls-right">
+                        <button class="control-button" id="clearDebugging" onclick="game.clearDebugging()">Clear debugging</button>
+                        <div class="custom-select">
+                            <label for="speedSelect" class="speedLabel">Speed:</label>
+                            <select class="control-button" id="speedSelect" onchange="game.setSpeed(parseFloat(this.value))">
+                                <option value="0.25">0.25</option>
+                                <option value="0.5">0.5</option>
+                                <option value="0.75">0.75</option>
+                                <option value="1" selected>1</option>
+                                <option value="1.25">1.25</option>
+                                <option value="1.5">1.5</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>
