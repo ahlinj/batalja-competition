@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bb9ff689-f205-474a-a93d-40b2f2b1f9fc" name="Changes" comment="" />
+    <list default="true" id="bb9ff689-f205-474a-a93d-40b2f2b1f9fc" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -21,7 +23,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/ahlinj/batalja-bot.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/ahlinj/batalja-competition.git&quot;,
     &quot;accountId&quot;: &quot;a5676591-0a4e-4247-9fd9-ec1beaf7ac9a&quot;
   }
 }</component>
@@ -42,6 +44,8 @@
   "keyToString": {
     "Application.Player.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/Jaka/Desktop/Gamepack2v2_2025-02-20",
@@ -79,7 +83,8 @@
       <workItem from="1742843974254" duration="31000" />
       <workItem from="1742844010453" duration="21000" />
       <workItem from="1742844039959" duration="1665000" />
-      <workItem from="1742845904904" duration="165000" />
+      <workItem from="1742845904904" duration="1783000" />
+      <workItem from="1744222391630" duration="731000" />
     </task>
     <task id="LOCAL−00001" summary="zikzu">
       <option name="closed" value="true" />
@@ -100,6 +105,17 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <ignored-roots>

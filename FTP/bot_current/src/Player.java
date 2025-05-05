@@ -1,109 +1,70 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.Vector;
 
 public class Player {
-    public static void main(String[] args) throws Exception {
-        FileWriter fstream = new FileWriter("Igralec.log"); // uporabimo za debuganje
-        BufferedWriter out = new BufferedWriter(fstream);
-        try {
-			/*
-				**************
-				Initialization
-				**************
-			*/
 
-            Scanner bralec = new Scanner(System.in);
-            String line = bralec.nextLine();// line of input from the game
-            //U	<int>,<int>,<string>						Universe - size (x in y) playing field (allways 100,100), and your color
-            String[] tokens = line.split(" ");
-            int x = Integer.parseInt(tokens[1]);
-            int y = Integer.parseInt(tokens[2]);
-            String color = tokens[3];
-            //pisemo na log
-            out.write(line + "\n");
-            out.flush();//vedno flushat buffer!!
+    public static CommandCenter commandCenter;
+    public static int universeWidth;
+    public static int universeHeight;
+    public static String myColor;
+    public static ArrayList<String> otherPlayersPlanets = new ArrayList<>();
+    public static ArrayList<String> myTemmatePlanets = new ArrayList<>();
+    public static ArrayList<String> myPlanets = new ArrayList<>();
 
-			/*
-				**************
-				Main game loop
-				**************
-			*/
-            while (true) {
-				/*
-					******************************
-					clear state from previous turn
-					******************************
-				*/
+    public static void main(String[] args) throws IOException {
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
 
-                //ustvarimo novi objekt
-                //oziroma brisi starega in naredi novi objekt
-                NapadalniPanel np = new NapadalniPanel(x,y,color);
+        // Wait for initial /U line to set up universe and player color
+        String line;
+        while (!(line = stdin.readLine()).startsWith("/U")) {}
+        String[] tokens = line.split(" ");
+        universeWidth = Integer.parseInt(tokens[1]);
+        universeHeight = Integer.parseInt(tokens[2]);
+        myColor = tokens[3];
 
-				/*
-					********************************
-					read the input from the game and
-					parse it (state of the game)
-					********************************
-				*/
+        // Initialize command center once
+        commandCenter = new CommandCenter(universeWidth, universeHeight, myColor);
 
+        // Main game loop
+        while (true) {
+            getGameState(stdin);
 
-					/*
+            String attack = commandCenter.attack();
+            System.out.println(attack);
+            System.out.println("/M Hello");
 
-						P	<int>,<int>,<int>,<float>,<int>,<string>	Planet:	- name (number), - position x, - position y, - planet size, - fleet size, - planet color (red, blue or null)
-						S	-											Start - when a player receives this command from the game he starts responding
-					*/
-                line = bralec.nextLine();
-                while( ! line.equals("S") ){   //ponavljaj branje dokler ne preberes "S"
-                    //beremo input dokler ne dobimo S
-                    out.write(line + "\n");
-                    out.flush();
-                    //prsajmo vrstico
-                    tokens = line.split(" ");
-
-                    if(tokens[0].equals("P")){
-                        //dobili smo planet in si ga zapomnimo
-                        np.dodajPlanet(tokens);
-                    }
-
-
-
-                    if(tokens[0].equals("F")){
-                        np.dodajFleat(tokens);
-                    }
-                    line = bralec.nextLine(); //preberemo naslednjo vrstico
-                }
-
-
-				/*
-					*********************************
-					LOGIC: figure out what to do with
-					your turn
-					*********************************
-				*/
-
-                String attack = np.napad();  //izvedi napad
-
-				/*
-					*********************************
-					Print the attack command and thus
-					end the turn
-					*********************************
-				*/
-                attack += "E"; // end of turn command
-                System.out.println(attack); // send commands to the game
+            for (String myPlanet : myPlanets) {
+                System.out.println("/P " + myPlanet + " My planet " + myPlanet);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            out.write("ERROR: ");
-            out.write(e.getMessage());
-            out.flush();
+
+            System.out.println("/E");
         }
-        out.close();
+    }
+
+    public static void getGameState(BufferedReader stdin) throws IOException {
+        // Clear lists
+        myPlanets.clear();
+        myTemmatePlanets.clear();
+        otherPlayersPlanets.clear();
+
+        // Reset CommandCenter internal lists
+        commandCenter.resetState();
+
+        String line;
+        while (!(line = stdin.readLine()).equals("/S")) {
+            String[] tokens = line.split(" ");
+            char command = line.charAt(1);
+
+            switch (command) {
+                case 'P':
+                    commandCenter.addPlanet(tokens);
+                    break;
+                case 'F':
+                    commandCenter.addFleets(tokens);
+                    break;
+            }
+        }
     }
 }
