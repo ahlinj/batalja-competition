@@ -42,10 +42,7 @@ public class Cluster {
                 clusters.add(cluster);
             }
         }
-        clusters.sort(Comparator.<List<Point>>comparingInt(List::size).reversed()
-                .thenComparingDouble(this::averageDistance));
-
-
+        clusters.sort((a, b) -> Integer.compare(b.size(), a.size()));
 /**
         System.out.println("=== Top Clusters Found ===");
         for (int i = 0; i < Math.min(2, clusters.size()); i++) {
@@ -57,19 +54,6 @@ public class Cluster {
 **/
         return clusters.subList(0, Math.min(2, clusters.size()));
     }
-
-    private double averageDistance(List<Point> cluster) {
-        double total = 0.0;
-        int count = 0;
-        for (int i = 0; i < cluster.size(); i++) {
-            for (int j = i + 1; j < cluster.size(); j++) {
-                total += cluster.get(i).distance(cluster.get(j));
-                count++;
-            }
-        }
-        return count == 0 ? 0 : total / count;
-    }
-
 
     public List<Planet> planetsInTheCluster(List<Point> cluster) {
     ArrayList<Planet> planets = combainAllPlanets();

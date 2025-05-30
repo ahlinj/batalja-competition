@@ -15,7 +15,6 @@ public class Player {
 
     public static void main(String[] args) throws IOException {
         BufferedReader stdin = new BufferedReader(new InputStreamReader(System.in));
-        int turnCounter = 0;
         // Wait for initial /U line to set up universe and player color
         String line;
         while (!(line = stdin.readLine()).startsWith("/U")) {}
@@ -26,13 +25,14 @@ public class Player {
 
         // Initialize command center once
         commandCenter = new CommandCenter(universeWidth, universeHeight, myColor);
+        int turn = 0;
 
         // Main game loop
         while (true) {
             getGameState(stdin);
-
-            String attack = commandCenter.defence();
-            attack += commandCenter.attack();
+            turn++;
+            //String attack = commandCenter.defence();
+            String attack = commandCenter.attack(turn);
             System.out.println(attack);
             System.out.println("/M Hello");
 

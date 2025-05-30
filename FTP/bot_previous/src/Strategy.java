@@ -46,7 +46,7 @@ public class Strategy {
         classifyPlanets();
         //find 2 biggest clusters (1 team other enemy cluster)
         cluster = new Cluster(myPlanets,enemyPlanets,teammatesPlanets,neutralPlanets,x,y);
-        clusters = cluster.findTop2ClustersDBSCAN(6,3);
+        clusters = cluster.findTop2ClustersDBSCAN(4,2);
 
         int stage = determineGameStage(turn);
         StringBuilder commands = new StringBuilder();
@@ -68,7 +68,7 @@ public class Strategy {
     }
 
     private int determineGameStage(int turn) {
-        if (turn < 100) return 0;
+        if (turn < 60 || neutralPlanets.size() > 3 ) return 0;
         if (turn < 120) return 1;
         return 2;
     }
@@ -223,59 +223,38 @@ public class Strategy {
 
     private String midGameStrategy() {
         StringBuilder cmd = new StringBuilder();
-
+        cmd.append(feedPlanets());
         for (Planet src : myPlanets) {
-            if (src.getPlanetSize() >= 8 || src.isUnderAttack() || src.isAttacking()) continue;
-
+            if (src.getPlanetSize() >= 8 || src.isUnderAttack() ||src.isAttacking() ) continue;
             Planet target = Stream.concat(neutralPlanets.stream(), enemyPlanets.stream())
                     .filter(p -> !weAreWinningBattleFor(p))
-                    .max(Comparator.comparingDouble(p -> {
-                        double growth = fleetGrowthRate(p);
-                        double distance = getDistance(src, p);
-                        double defense = p.getFleetSize() + 5;
-                        return (growth / (distance + defense)); // closer = higher value
-                    }))
+                    .max(Comparator.comparingDouble(p -> fleetGrowthRate(p) / (getDistance(src, p) + p.getFleetSize() + 5)))
                     .orElse(null);
 
             if (target != null) {
-                int baseRequired = target.getFleetSize() + 1;
-                int required = (int) Math.ceil(baseRequired * 1.4); // 40% buffer
+                int required = target.getFleetSize() + 1;
                 int maxSend = optimalFleetSize(src);
-
-                if (required < maxSend) continue;
-                if (canAffordToSend(src, required) && maxSend != 0) {
+                if(required < maxSend) continue;
+                if (canAffordToSend(src, required)  && maxSend != 0) {
                     cmd.append(src.attackPlanet(target, required));
                 }
             }
         }
-
         return cmd.toString();
     }
 
     private String lateGameStrategy() {
         StringBuilder cmd = new StringBuilder();
-
         for (Planet src : myPlanets) {
-            if (src.isUnderAttack() || src.isAttacking()) continue;
-
-            Planet target = enemyPlanets.stream()
+            if(src.isUnderAttack() || src.isAttacking()) continue;
+                Planet target = enemyPlanets.stream()
                     .filter(p -> !weAreWinningBattleFor(p))
-                    .max(Comparator.comparingDouble(p -> {
-                        double growth = fleetGrowthRate(p);
-                        double distance = getDistance(src, p);
-                        double sizeWeight = p.getPlanetSize();
-                        double defense = p.getFleetSize();
-
-                        // Prioritize high-growth, large, closer targets
-                        return (growth + sizeWeight) / (distance + defense + 5);
-                    }))
+                    .max(Comparator.comparingDouble(p -> fleetGrowthRate(p) / (getDistance(src, p) + p.getFleetSize())))
                     .orElse(null);
-
             if (target != null) {
-                int baseRequired = target.getFleetSize() + 1;
-                int required = (int) Math.ceil(baseRequired * 1.2); // 20% buffer
                 int maxSend = optimalFleetSize(src);
-
+                int required = target.getFleetSize() + 1;
+                if(required < maxSend) continue;
                 if (canAffordToSend(src, required)) {
                     cmd.append(src.attackPlanet(target, required));
                 }
@@ -284,7 +263,6 @@ public class Strategy {
 
         return cmd.toString();
     }
-
 
     private String feedPlanets() {
         StringBuilder cmd = new StringBuilder();
