@@ -10,8 +10,6 @@ public class Planet {
     public float planetSize;
     public int fleetSize;
     public String color;
-    public boolean underAttack;
-    public boolean attacking;
 
     //konstruktor
     public Planet(String[] t){
@@ -21,16 +19,6 @@ public class Planet {
         this.planetSize = Float.parseFloat(t[4]);
         this.fleetSize = Integer.parseInt(t[5]);
         this.color = t[6];
-        this.underAttack = false;
-        this.attacking = false;
-    }
-
-    public boolean isAttacking() {
-        return attacking;
-    }
-
-    public void setAttacking(boolean attacking) {
-        this.attacking = attacking;
     }
 
     public String getName() {
@@ -57,16 +45,6 @@ public class Planet {
         return color;
     }
 
-    public boolean isUnderAttack() {
-        return underAttack;
-    }
-
-    public void setUnderAttack(boolean underAttack) {
-        this.underAttack = underAttack;
-    }
-
-
-
     //zapisi potezo kot string
     // this planet napade planet b
     public String attackPlanet(Planet b, int fleetSize){
@@ -75,8 +53,6 @@ public class Planet {
         poteza += b.getName()+ " ";//napadan planet
         if(fleetSize > 0){
             poteza += fleetSize + " ";
-        }else{
-            poteza = " ";
         }
         poteza += "\n";
         return poteza;
