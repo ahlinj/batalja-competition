@@ -46,13 +46,16 @@ public class Strategy {
         classifyPlanets();
         //find 2 biggest clusters (1 team other enemy cluster)
         cluster = new Cluster(myPlanets,enemyPlanets,teammatesPlanets,neutralPlanets,x,y);
-        clusters = cluster.findTop2ClustersDBSCAN(4,2);
+        clusters = cluster.findTop2ClustersDBSCAN(6,3);
 
         int stage = determineGameStage(turn);
         StringBuilder commands = new StringBuilder();
         commands.append(defendUnderAttack());
 
         switch (stage) {
+            case 3:
+                commands.append(initialNeutralRush());
+                break;
             case 0:
                 commands.append(earlyGameExpansion());
                 break;
@@ -68,7 +71,8 @@ public class Strategy {
     }
 
     private int determineGameStage(int turn) {
-        if (turn < 60 || neutralPlanets.size() > 3 ) return 0;
+        if (turn < 30) return 3;
+        if (turn < 100) return 0;
         if (turn < 120) return 1;
         return 2;
     }
@@ -164,6 +168,38 @@ public class Strategy {
         return owned == cluster.size();
     }
 
+    private String initialNeutralRush() {
+        StringBuilder cmd = new StringBuilder();
+
+        for (Planet src : myPlanets) {
+            if (src.getFleetSize() <= MIN_DEFENSE || src.isUnderAttack() || src.isAttacking())
+                continue;
+
+            // Find the closest neutral planet that isn't already being won by us
+            Planet target = neutralPlanets.stream()
+                    .filter(p -> !weAreWinningBattleFor(p))
+                    .filter(p -> getDistance(src, p) <= (x + y) / 2)
+                    .min(Comparator.comparingDouble(p -> getDistance(src, p)))
+                    .orElse(null);
+
+            if (target != null) {
+                int required = target.getFleetSize() + 1;
+                int maxSend = optimalFleetSize(src);
+
+                if (canAffordToSend(src, required)) {
+                    cmd.append(src.attackPlanet(target, required));
+                    src.setAttacking(true);
+                } else if (canAffordToSend(src, maxSend) && maxSend > 0) {
+                    cmd.append(src.attackPlanet(target, maxSend));
+                    src.setAttacking(true);
+                }
+            }
+        }
+
+        return cmd.toString();
+    }
+
+
     private String earlyGameExpansion() {
         StringBuilder cmd = new StringBuilder();
 
@@ -223,38 +259,59 @@ public class Strategy {
 
     private String midGameStrategy() {
         StringBuilder cmd = new StringBuilder();
-        cmd.append(feedPlanets());
+
         for (Planet src : myPlanets) {
-            if (src.getPlanetSize() >= 8 || src.isUnderAttack() ||src.isAttacking() ) continue;
+            if (src.getPlanetSize() >= 8 || src.isUnderAttack() || src.isAttacking()) continue;
+
             Planet target = Stream.concat(neutralPlanets.stream(), enemyPlanets.stream())
                     .filter(p -> !weAreWinningBattleFor(p))
-                    .max(Comparator.comparingDouble(p -> fleetGrowthRate(p) / (getDistance(src, p) + p.getFleetSize() + 5)))
+                    .max(Comparator.comparingDouble(p -> {
+                        double growth = fleetGrowthRate(p);
+                        double distance = getDistance(src, p);
+                        double defense = p.getFleetSize() + 5;
+                        return (growth / (distance + defense)); // closer = higher value
+                    }))
                     .orElse(null);
 
             if (target != null) {
-                int required = target.getFleetSize() + 1;
+                int baseRequired = target.getFleetSize() + 1;
+                int required = (int) Math.ceil(baseRequired * 1.4); // 40% buffer
                 int maxSend = optimalFleetSize(src);
-                if(required < maxSend) continue;
-                if (canAffordToSend(src, required)  && maxSend != 0) {
+
+                if (required < maxSend) continue;
+                if (canAffordToSend(src, required) && maxSend != 0) {
                     cmd.append(src.attackPlanet(target, required));
                 }
             }
         }
+
         return cmd.toString();
     }
 
     private String lateGameStrategy() {
         StringBuilder cmd = new StringBuilder();
+
         for (Planet src : myPlanets) {
-            if(src.isUnderAttack() || src.isAttacking()) continue;
-                Planet target = enemyPlanets.stream()
+            if (src.isUnderAttack() || src.isAttacking()) continue;
+
+            Planet target = enemyPlanets.stream()
                     .filter(p -> !weAreWinningBattleFor(p))
-                    .max(Comparator.comparingDouble(p -> fleetGrowthRate(p) / (getDistance(src, p) + p.getFleetSize())))
+                    .max(Comparator.comparingDouble(p -> {
+                        double growth = fleetGrowthRate(p);
+                        double distance = getDistance(src, p);
+                        double sizeWeight = p.getPlanetSize();
+                        double defense = p.getFleetSize();
+
+                        // Prioritize high-growth, large, closer targets
+                        return (growth + sizeWeight) / (distance + defense + 5);
+                    }))
                     .orElse(null);
+
             if (target != null) {
+                int baseRequired = target.getFleetSize() + 1;
+                int required = (int) Math.ceil(baseRequired * 1.2); // 20% buffer
                 int maxSend = optimalFleetSize(src);
-                int required = target.getFleetSize() + 1;
-                if(required < maxSend) continue;
+
                 if (canAffordToSend(src, required)) {
                     cmd.append(src.attackPlanet(target, required));
                 }
@@ -263,6 +320,7 @@ public class Strategy {
 
         return cmd.toString();
     }
+
 
     private String feedPlanets() {
         StringBuilder cmd = new StringBuilder();
